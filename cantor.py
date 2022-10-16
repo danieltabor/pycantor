@@ -146,9 +146,9 @@ class CantorControls(QWidget):
 		layout = QGridLayout(self)
 		self.setLayout(layout)
 		
-		snapshot = QPushButton("Snapshot")
-		snapshot.clicked.connect(self.onSnapshot)
-		layout.addWidget(snapshot,0,0)
+		self.snapshot = QPushButton("Snapshot 00000000h-FFFFFFFFh")
+		self.snapshot.clicked.connect(self.onSnapshot)
+		layout.addWidget(self.snapshot,0,0)
 		layout.addWidget(QLabel("off"),0,1)
 		layout.addWidget(QLabel("len"),0,2)
 		layout.addWidget(QLabel("bri"),0,3)
@@ -186,21 +186,25 @@ class CantorControls(QWidget):
 		layout.addWidget(self.brightness,1,3)
 
 		self.setWindowTitle(os.path.basename(fp.name))
+		self.snapshot.setText("Snapshot %08X-%08X" % (self.cantor.offset(),self.cantor.offset()+self.cantor.plotSize()))
 		
 	def onChangeOffset(self,evt):
 		self.cantor.setOffset(int(self.offset.value()/self.scale))
+		self.snapshot.setText("Snapshot %08X-%08X" % (self.cantor.offset(),self.cantor.offset()+self.cantor.plotSize()))
 		
 	def onChangePlotSize(self,evt):
-		self.cantor.setPlotSize(int(self.plotsize.value()/self.scale))
-		
+		self.cantor.setPlotSize(int(self.plotsize.value()/self.scale))		
 		self.offset.setMaximum(int(self.cantor.maxOffset()*self.scale))
 		self.offset.setValue(int(self.cantor.offset()*self.scale))
+		self.snapshot.setText("Snapshot %08X-%08X" % (self.cantor.offset(),self.cantor.offset()+self.cantor.plotSize()))
 			
 	def onChangeBrightness(self,evt):
 		self.cantor.setBrightness(self.brightness.value())
 			
 	def onSnapshot(self):
-		path,ext = QFileDialog.getSaveFileName(self,"Select Image to Save",".","PNG Files (*.png)")
+		path,ext = QFileDialog.getSaveFileName(self,"Select Image to Save",
+			"%s_%08X-%08X.png" % (self.windowTitle(),self.cantor.offset(),self.cantor.offset()+self.cantor.plotSize()),
+			"PNG Files (*.png)")
 		if len(path):
 			self.cantor.snapshot(path)
 		
